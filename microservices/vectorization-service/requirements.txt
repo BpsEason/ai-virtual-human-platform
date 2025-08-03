@@ -1,0 +1,11 @@
+fastapi==0.95.0
+uvicorn
+numpy
+pandas
+pinecone-client
+sentence-transformers==2.2.2
+faiss-cpu==1.7.0
+transformers==4.28.0
+torch
+pytest
+flake8
