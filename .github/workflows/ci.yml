@@ -1,0 +1,43 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+      - name: Install PHP Dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Run PHP Tests
+        run: vendor/bin/phpunit
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: Install Chat Service Dependencies
+        run: cd microservices/chat-service && npm install
+      - name: Build Chat Service
+        run: cd microservices/chat-service && npm run build
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install Vectorization Service Dependencies
+        run: cd microservices/vectorization-service && pip install -r requirements.txt
+      - name: Run Python Tests
+        run: cd microservices/vectorization-service && pytest
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.9.0'
+      - name: Deploy to Kubernetes
+        run: helm upgrade --install my-app ./kubernetes/helm --set image.tag=latest --namespace my-namespace --create-namespace
